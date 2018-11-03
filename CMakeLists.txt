@@ -76,10 +76,6 @@ MYPACKAGELIBRARY(
 #
 INSTALL(FILES ${INCLUDE_OUTPUT_PATH}/luaunpanic/lua/luaconf.h DESTINATION include/luaunpanic/lua COMPONENT HeaderComponent)
 #
-# Add lua/lua.hpp to installed files
-#
-INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/luaunpanic/lua/lua.hpp DESTINATION include/luaunpanic/lua COMPONENT HeaderComponent)
-#
 # dl and m dependency
 #
 IF (   (NOT ("${CMAKE_DL_LIBS}" STREQUAL ""))
