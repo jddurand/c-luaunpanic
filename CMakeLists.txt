@@ -47,9 +47,14 @@ SET (libluaunpanic_src
   src/luaunpanic.c
   )
 #
-# We moved some lua header to include/la
+# We moved lua headers to include/luaunpanic/lua
 #
-INCLUDE_DIRECTORIES ("${CMAKE_CURRENT_SOURCE_DIR}/include/lua")
+INCLUDE_DIRECTORIES ("${CMAKE_CURRENT_SOURCE_DIR}/include/luaunpanic/lua")
+
+#
+# We generate luaconf.h that is then placed to output's include/luaunpanic
+#
+INCLUDE_DIRECTORIES ("${INCLUDE_OUTPUT_PATH}/luaunpanic/lua")
 
 #
 # OS-specifics
@@ -63,13 +68,17 @@ ELSE ()
 ENDIF ()
 
 MYPACKAGELIBRARY(
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/luaconf.h.in
-  ${INCLUDE_OUTPUT_PATH}/lua/luaconf.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/luaunpanic/internal/luaconf.h.in
+  ${INCLUDE_OUTPUT_PATH}/luaunpanic/lua/luaconf.h
   ${libluaunpanic_src})
 #
 # Add lua/luaconf.h to installed files
 #
-INSTALL(FILES ${INCLUDE_OUTPUT_PATH}/lua/luaconf.h DESTINATION include/lua COMPONENT HeaderComponent)
+INSTALL(FILES ${INCLUDE_OUTPUT_PATH}/luaunpanic/lua/luaconf.h DESTINATION include/luaunpanic/lua COMPONENT HeaderComponent)
+#
+# Add lua/lua.hpp to installed files
+#
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/luaunpanic/lua/lua.hpp DESTINATION include/luaunpanic/lua COMPONENT HeaderComponent)
 #
 # dl and m dependency
 #
