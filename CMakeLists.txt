@@ -47,16 +47,6 @@ SET (libluaunpanic_src
   src/luaunpanic.c
   )
 #
-# We moved lua headers to include/luaunpanic/lua
-#
-INCLUDE_DIRECTORIES ("${CMAKE_CURRENT_SOURCE_DIR}/include/luaunpanic/lua")
-
-#
-# We generate luaconf.h that is then placed to output's include/luaunpanic
-#
-INCLUDE_DIRECTORIES ("${INCLUDE_OUTPUT_PATH}/luaunpanic/lua")
-
-#
 # OS-specifics
 #
 IF (WIN32 AND NOT CYGWIN)
@@ -71,6 +61,11 @@ MYPACKAGELIBRARY(
   ${CMAKE_CURRENT_SOURCE_DIR}/include/luaunpanic/internal/luaconf.h.in
   ${INCLUDE_OUTPUT_PATH}/luaunpanic/lua/luaconf.h
   ${libluaunpanic_src})
+#
+# We moved lua headers to include/luaunpanic/lua
+# We generate luaconf.h in ${INCLUDE_OUTPUT_PATH}/luaunpanic/lua
+#
+INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/include/luaunpanic/lua" "${INCLUDE_OUTPUT_PATH}/luaunpanic/lua")
 #
 # Add lua/luaconf.h to installed files
 #

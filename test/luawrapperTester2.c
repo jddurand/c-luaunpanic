@@ -6,9 +6,9 @@
  * Updated to Lua 5.1. David Manura, January 2007.
  */
 
-#include <lua/luaunpanic.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <luaunpanic.h>
 
 #define PRINT_PANIC_STRING(L, f) do {					\
     char *panicstring;							\
