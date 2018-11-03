@@ -1,7 +1,4 @@
-#include <lua/luaunpanic.h>
-#include <lua.h>
-#include <lauxlib.h>
-#include <lualib.h>
+#include <luaunpanic.h>
 #include <stdlib.h>
 #include <setjmp.h>
 #include <errno.h>

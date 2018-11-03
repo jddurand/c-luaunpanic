@@ -1,10 +1,10 @@
-#ifndef luaunpanic_h
-#define luaunpanic_h
+#ifndef LUAUNPANIC_H
+#define LUAUNPANIC_H
 
-#include <lua/lua.h>
-#include <lua/lauxlib.h>
-#include <lua/lualib.h>
-#include <lua534/export.h>
+#include <luaunpanic/lua/lua.h>
+#include <luaunpanic/lua/lauxlib.h>
+#include <luaunpanic/lua/lualib.h>
+#include <luaunpanic/export.h>
 
 /* A bit tedious, but here it is:
  *
@@ -339,4 +339,4 @@ extern "C" {
 #define luaunpanicL_register(L,n,l) (luaunpanicL_openlib(L,(n),(l),0))
 #endif
 
-#endif /* luaunpanic_h */
+#endif /* LUAUNPANIC_H */
