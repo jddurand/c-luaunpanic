@@ -419,13 +419,13 @@ LUAUNPANIC_ON_VOID_FUNCTION    (luaunpanic_setallocf,    ,                      
 ** some useful macros that must be replaced by functions
 */
 LUAUNPANIC_IS_XXX(function, ==, LUA_TFUNCTION)
-LUAUNPANIC_IS_XXX(table, ==, LUA_TFUNCTION)
-LUAUNPANIC_IS_XXX(lightuserdata, ==, LUA_TFUNCTION)
-LUAUNPANIC_IS_XXX(nil, ==, LUA_TFUNCTION)
-LUAUNPANIC_IS_XXX(boolean, ==, LUA_TFUNCTION)
-LUAUNPANIC_IS_XXX(thread, ==, LUA_TFUNCTION)
-LUAUNPANIC_IS_XXX(none, ==, LUA_TFUNCTION)
-LUAUNPANIC_IS_XXX(noneornil, <=, LUA_TFUNCTION)
+LUAUNPANIC_IS_XXX(table, ==, LUA_TTABLE)
+LUAUNPANIC_IS_XXX(lightuserdata, ==, LUA_TLIGHTUSERDATA)
+LUAUNPANIC_IS_XXX(nil, ==, LUA_TNIL)
+LUAUNPANIC_IS_XXX(boolean, ==, LUA_TBOOLEAN)
+LUAUNPANIC_IS_XXX(thread, ==, LUA_TTHREAD)
+LUAUNPANIC_IS_XXX(none, ==, LUA_TNONE)
+LUAUNPANIC_IS_XXX(noneornil, <=, 0)
 /*
 ** compatibility macros for unsigned conversions that must be replaced by functions
 */
