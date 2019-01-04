@@ -4,13 +4,16 @@
 #include <errno.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stddef.h>
 
 #include "luaunpanic_macros.h"
 #include "try_throw_catch.h"
 
 typedef struct luaunpanic_userdata {
-  char *panicstring;
-  jmp_buf *envp;
+  char     *panicstring; /* Latest panic string */
+  size_t    envpmallocl; /* Allocated size */
+  size_t    envpusedl;   /* Used size */
+  jmp_buf  *envp;        /* envpusedl jump buffers */
 } luaunpanic_userdata_t;
 
 static char *LUAUNPANIC_DEFAULT_PANICSTRING = "";
@@ -94,6 +97,9 @@ short luaunpanic_newstate(lua_State **Lp, lua_Alloc f, void *ud)
   }
 
   LW->panicstring = LUAUNPANIC_DEFAULT_PANICSTRING;
+  LW->envpmallocl = 0;
+  LW->envpusedl   = 0;
+  LW->envp        = NULL;
 
   L = lua_newstate(f, ud);
   if (L == NULL) {
@@ -139,6 +145,9 @@ short luaunpanic_close(lua_State *L)
           if ((LW->panicstring != LUAUNPANIC_DEFAULT_PANICSTRING) && (LW->panicstring != LUAUNPANIC_UNKNOWN_PANICSTRING)) {
             free(LW->panicstring);
           }
+        }
+        if (LW->envp != NULL) {
+          free(LW->envp);
         }
         free(LW);
 	LW = NULL;
@@ -202,6 +211,9 @@ short luaunpanic_newthread(lua_State **Lp, lua_State *L)
   }
 
   LW->panicstring = LUAUNPANIC_DEFAULT_PANICSTRING;
+  LW->envpmallocl = 0;
+  LW->envpusedl   = 0;
+  LW->envp        = NULL;
 
   if (_luaunpanic_newthread(&LN, L)) {
     goto err;
@@ -220,6 +232,9 @@ short luaunpanic_newthread(lua_State **Lp, lua_State *L)
 
  err:
   if (LW != NULL) {
+    if (LW->envp != NULL) {
+      free(LW->envp);
+    }
     free(LW);
   }
   rc = 1;
@@ -242,6 +257,9 @@ short luaunpanicL_newstate(lua_State **Lp)
   }
 
   LW->panicstring = LUAUNPANIC_DEFAULT_PANICSTRING;
+  LW->envpmallocl = 0;
+  LW->envpusedl   = 0;
+  LW->envp        = NULL;
 
   L = luaL_newstate();
   if (L == NULL) {
