@@ -29,7 +29,7 @@
 #  define C_LOG2 math_log2
 static double C_LOG2(double x)
 {
-  const double log_of_2 = log(2.0d);
+  const double log_of_2 = log(2.0);
   return log(x) * log_of_2;
 }
 #endif /* C_LOG2 */
