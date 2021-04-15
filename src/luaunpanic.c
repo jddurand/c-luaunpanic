@@ -129,7 +129,7 @@ short luaunpanic_close(lua_State *L)
 /****************************************************************************/
 {
   short rc = 1;
-  luaunpanic_userdata_t *LW;
+  volatile luaunpanic_userdata_t *LW;
 
   if (L == NULL) {
     errno = EINVAL;
@@ -149,7 +149,7 @@ short luaunpanic_close(lua_State *L)
         if (LW->envp != NULL) {
           free(LW->envp);
         }
-        free(LW);
+        free((void *) LW);
 	LW = NULL;
       }
       ETRY(LW);
@@ -166,7 +166,7 @@ short luaunpanic_close(lua_State *L)
 static short _luaunpanic_newthread(lua_State **LNp, lua_State *L)
 {
   short rc = 1;
-  luaunpanic_userdata_t *LW;
+  volatile luaunpanic_userdata_t *LW;
   if (L == NULL) {
     errno = EINVAL;
   } else {
