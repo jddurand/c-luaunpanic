@@ -43,3 +43,7 @@
 
 #endif
 
+#if _WIN32 || _WIN64
+#undef NOAPISET
+#define NOAPISET
+#endif
