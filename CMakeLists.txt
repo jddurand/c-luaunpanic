@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED (VERSION 3.15.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED (VERSION 3.26.0 FATAL_ERROR)
 PROJECT(luaunpanic VERSION 5.3.4 LANGUAGES C)
 IF (NOT MYPACKAGEBOOTSTRAP_DONE)
   INCLUDE ("3rdparty/github/cmake-utils/cmake/MyPackageBootstrap.cmake")
@@ -19,31 +19,27 @@ MYPACKAGELIBRARY(
 #
 # OS-specifics
 #
-FOREACH (_target ${PROJECT_NAME} ${PROJECT_NAME}_static ${PROJECT_NAME}_objs ${PROJECT_NAME}_static_objs)
-  IF (WIN32 AND NOT CYGWIN)
-    TARGET_COMPILE_DEFINITIONS(${_target} PUBLIC -DLUA_DL_DLL)
-  ELSE ()
-    TARGET_COMPILE_DEFINITIONS(${_target} PUBLIC -DLUA_USE_DLOPEN -DLUA_USE_POSIX)
-  ENDIF ()
-ENDFOREACH ()
+IF (WIN32 AND NOT CYGWIN)
+  TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME}_iface INTERFACE -DLUA_DL_DLL)
+ELSE ()
+  TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME}_iface INTERFACE -DLUA_USE_DLOPEN -DLUA_USE_POSIX)
+ENDIF ()
 
 #
 # We moved lua headers to include/luaunpanic/lua
 # We generate luaconf.h in ${INCLUDE_OUTPUT_PATH}/luaunpanic/lua
 #
-FOREACH (_target ${PROJECT_NAME} ${PROJECT_NAME}_static ${PROJECT_NAME}_objs ${PROJECT_NAME}_static_objs)
-  TARGET_INCLUDE_DIRECTORIES(${_target} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/luaunpanic/lua>)
-  TARGET_INCLUDE_DIRECTORIES(${_target} PUBLIC $<BUILD_INTERFACE:${INCLUDE_OUTPUT_PATH}/luaunpanic/lua>)
-ENDFOREACH ()
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}_iface INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/luaunpanic/lua> $<INSTALL_INTERFACE:include/luaunpanic/lua>)
 #
-# Add lua/luaconf.h to installed files
+# Add lua/luaconf.h to interface
 #
-INSTALL(FILES ${INCLUDE_OUTPUT_PATH}/luaunpanic/lua/luaconf.h DESTINATION include/luaunpanic/lua COMPONENT HeaderComponent)
+TARGET_SOURCES(${PROJECT_NAME}_iface INTERFACE FILE_SET public_headers BASE_DIRS ${PUBLIC_HEADERS_BASE_DIRS} TYPE HEADERS FILES ${INCLUDE_OUTPUT_PATH}/luaunpanic/lua/luaconf.h)
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}_iface INTERFACE $<BUILD_INTERFACE:${INCLUDE_OUTPUT_PATH}/luaunpanic/lua>)
 #
 # dl and m dependency
 #
 IF (CMAKE_DL_LIBS OR CMAKE_MATH_LIBS)
-  FOREACH (_target luaunpanic luaunpanic_static luaunpanic_objs luaunpanic_static_objs)
+  FOREACH (_target ${PROJECT_NAME}_shared ${PROJECT_NAME}_static)
     IF (CMAKE_DL_LIBS)
       TARGET_LINK_LIBRARIES(${_target} PUBLIC ${CMAKE_DL_LIBS})
     ENDIF ()
