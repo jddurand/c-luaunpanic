@@ -84,26 +84,6 @@ ENDIF ()
 ###############
 # Executables #
 ###############
-MYPACKAGEEXECUTABLE(luaunpanicExe src/lua.c)
-MYPACKAGEADDEXECUTABLESTOTESTS(luaunpanicExe)
-FOREACH (_target luaunpanicExe luaunpanicExe_static)
-  IF (${_target} STREQUAL "luaunpanicExe")
-    SET_TARGET_PROPERTIES(${_target} PROPERTIES OUTPUT_NAME luaunpanic)
-  ELSE ()
-    SET_TARGET_PROPERTIES(${_target} PROPERTIES OUTPUT_NAME luaunpanic_static)
-  ENDIF ()
-ENDFOREACH ()
-
-MYPACKAGEEXECUTABLE(luaunpanicCompilerExe src/luac.c)
-MYPACKAGEADDEXECUTABLESTOTESTS(luaunpanicCompilerExe)
-FOREACH (_target luaunpanicCompilerExe luaunpanicCompilerExe_static)
-  IF (${_target} STREQUAL "luaunpanicCompilerExe")
-    SET_TARGET_PROPERTIES(${_target} PROPERTIES OUTPUT_NAME luaunpanicc)
-  ELSE ()
-    SET_TARGET_PROPERTIES(${_target} PROPERTIES OUTPUT_NAME luaunpanicc_static)
-  ENDIF ()
-ENDFOREACH ()
-
 MYPACKAGETESTEXECUTABLE(luaunpanicwrapperTester test/luawrapperTester.c)
 MYPACKAGETESTEXECUTABLE(luaunpanicwrapperTester2 test/luawrapperTester2.c)
 
