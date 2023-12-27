@@ -1,110 +1,125 @@
-CMAKE_MINIMUM_REQUIRED (VERSION 3.26.0 FATAL_ERROR)
-PROJECT(luaunpanic VERSION 5.3.4 LANGUAGES C)
-IF (NOT MYPACKAGEBOOTSTRAP_DONE)
-  INCLUDE ("3rdparty/github/cmake-utils/cmake/MyPackageBootstrap.cmake")
-ENDIF ()
-MYPACKAGESTART ()
-
-OPTION (LUA_32BITS "Use 32-bit integers and 32-bit floats" OFF)
-OPTION (LUA_USE_C89 "Avoid the use of few C99 feature" OFF)
-
-###########
-# Library #
-###########
-MYPACKAGELIBRARY(
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/luaunpanic/internal/luaconf.h.in
-  ${INCLUDE_OUTPUT_PATH}/luaunpanic/lua/luaconf.h
-  src/luaunpanic_amalgamation.c)
-
+#
+# Multi-config generator, e.g. Visual Studio on Windows:
+#
+# cmake -S c-luaunpanic -B c-luaunpanic-build
+# cmake --build c-luaunpanic-build --config RelWithDebInfo
+# ctest --test-dir c-luaunpanic-build -C RelWithDebInfo
+# Windows:
+#   cmake --install c-luaunpanic-build --config RelWithDebInfo --prefix %cd%/c-luaunpanic-install
+# Others:
+#   cmake --install c-luaunpanic-build --config RelWithDebInfo --prefix `pwd`/c-luaunpanic-install
+# cmake --build c-luaunpanic-build --config RelWithDebInfo --target package
+#
+# Single-config generator, e.g. NMake Makefiles on Windows, Unix Makefiles on Linxu:
+#
+# cmake -S c-luaunpanic -B c-luaunpanic-build -DCMAKE_BUILD_TYPE=RelWithDebInfo
+# cmake --build c-luaunpanic-build
+# ctest --test-dir c-luaunpanic-build
+# Windows:
+#   cmake --install c-luaunpanic-build --prefix %cd%/c-luaunpanic-install
+# Others:
+#   cmake --install c-luaunpanic-build --prefix `pwd`/c-luaunpanic-install
+# cmake --build c-luaunpanic-build --target package
+#
+# Local tests done with: cmake -S c-luaunpanic -B c-luaunpanic-build -DCMAKE_HELPERS_DEBUG=OFF -DICU_ROOT=C:\icu4c-74_2-Win64-MSVC2019
+#
+cmake_minimum_required(VERSION 3.26.0 FATAL_ERROR)
+project(luaunpanic VERSION 5.3.4 LANGUAGES C)
+#
+# Specific options
+#
+option(LUA_32BITS "Use 32-bit integers and 32-bit floats" OFF)
+option(LUA_USE_C89 "Avoid the use of few C99 feature" OFF)
+#
+# Get library helper
+#
+include(FetchContent)
+FetchContent_Declare(cmake-helpers GIT_REPOSITORY https://github.com/jddurand/cmake-helpers.git GIT_SHALLOW TRUE)
+FetchContent_MakeAvailable(cmake-helpers)
+#
+# Create library
+#
+cmake_helpers_library(tconv
+  CONFIG_ARGS                    include/luaunpanic/internal/luaconf.h.in include/luaunpanic/lua/luaconf.h
+  PODS_AUTO                      FALSE
+  SOURCES_ACCEPT_RELPATH_REGEXES luaunpanic_amalgamation.c
+  TARGETS_OUTVAR                 targets
+)
 #
 # OS-specifics
 #
-IF (WIN32 AND NOT CYGWIN)
-  TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME}_iface INTERFACE -DLUA_DL_DLL)
-ELSE ()
-  TARGET_COMPILE_DEFINITIONS(${PROJECT_NAME}_iface INTERFACE -DLUA_USE_DLOPEN -DLUA_USE_POSIX)
-ENDIF ()
-
+foreach(_target IN LISTS targets)
+  if(WIN32 AND NOT CYGWIN)
+    target_compile_definitions(${_target} INTERFACE -DLUA_DL_DLL)
+  else()
+    target_compile_definitions(${_target} INTERFACE -DLUA_USE_DLOPEN -DLUA_USE_POSIX)
+  endif()
+endforeach()
 #
 # We moved lua headers to include/luaunpanic/lua
 # We generate luaconf.h in ${INCLUDE_OUTPUT_PATH}/luaunpanic/lua
 #
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}_iface INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/luaunpanic/lua> $<INSTALL_INTERFACE:include/luaunpanic/lua>)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/luaunpanic/lua)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/include/luaunpanic/lua)
+foreach(_target IN LISTS targets)
+  # target_include_directories(${_target} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/luaunpanic/lua)
+endforeach()
 #
 # Add lua/luaconf.h to interface
 #
-TARGET_SOURCES(${PROJECT_NAME}_iface INTERFACE FILE_SET public_headers BASE_DIRS ${PUBLIC_HEADERS_BASE_DIRS} TYPE HEADERS FILES ${INCLUDE_OUTPUT_PATH}/luaunpanic/lua/luaconf.h)
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}_iface INTERFACE $<BUILD_INTERFACE:${INCLUDE_OUTPUT_PATH}/luaunpanic/lua>)
-#
 # dl and m dependency
 #
-IF (CMAKE_DL_LIBS OR CMAKE_MATH_LIBS)
-  FOREACH (_target ${PROJECT_NAME}_shared ${PROJECT_NAME}_static)
-    IF (CMAKE_DL_LIBS)
-      TARGET_LINK_LIBRARIES(${_target} PUBLIC ${CMAKE_DL_LIBS})
-    ENDIF ()
-    IF (CMAKE_MATH_LIBS)
-      TARGET_LINK_LIBRARIES(${_target} PUBLIC ${CMAKE_MATH_LIBS})
-    ENDIF ()
-  ENDFOREACH ()
-ENDIF ()
+if(CMAKE_DL_LIBS OR CMAKE_MATH_LIBS)
+  foreach(_target IN LISTS targets)
+    if(CMAKE_DL_LIBS)
+      target_link_librarues(${_target} PUBLIC ${CMAKE_DL_LIBS})
+    endif()
+    if(CMAKE_MATH_LIBS)
+      target_link_libraries(${_target} PUBLIC ${CMAKE_MATH_LIBS})
+    endif()
+  endforeach()
+endif()
 #
 # Those definitions have to propagate to those using the library
 #
-SET (LUA_PUBLIC_CFLAGS)
-IF (LUA_32BITS)
-  LIST (APPEND LUA_PUBLIC_CFLAGS "-DLUA_32BITS")
-ENDIF ()
-IF (LUA_USE_C89)
-  LIST (APPEND LUA_PUBLIC_CFLAGS "-DLUA_USE_C89")
-ENDIF ()
-
-LIST(LENGTH LUA_PUBLIC_CFLAGS LUA_PUBLIC_CFLAGS_LENGTH)
-IF (LUA_PUBLIC_CFLAGS_LENGTH GREATER 0)
-  FOREACH (_target luaunpanic luaunpanic_static luaunpanic_objs luaunpanic_static_objs)
-    TARGET_COMPILE_DEFINITIONS(${_target} PUBLIC ${LUA_PUBLIC_CFLAGS})
-  ENDFOREACH ()
-ENDIF ()
-
+set(LUA_PUBLIC_CFLAGS)
+if(LUA_32BITS)
+  list(APPEND LUA_PUBLIC_CFLAGS "-DLUA_32BITS")
+endif()
+if(LUA_USE_C89)
+  list(APPEND LUA_PUBLIC_CFLAGS "-DLUA_USE_C89")
+endif()
+list(LENGTH LUA_PUBLIC_CFLAGS LUA_PUBLIC_CFLAGS_LENGTH)
+if(LUA_PUBLIC_CFLAGS_LENGTH GREATER 0)
+  foreach(_target IN LISTS targets)
+    target_compile_definitions(${_target} PUBLIC ${LUA_PUBLIC_CFLAGS})
+  endforeach()
+endif()
 #
 # Those definitions are private
 #
-SET (LUA_PRIVATE_C_FLAGS)
-IF (CMAKE_C_COMPILER_ID STREQUAL SunPro)
-  SET (LUA_PRIVATE_C_FLAGS "-xc99")
-ENDIF ()
-
-IF (NOT "x${LUA_PRIVATE_C_FLAGS}" STREQUAL x)
-  #
-  # Fortunately this will remain local to this CMakeLists.txt -;
-  #
-  SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${LUA_PRIVATE_C_FLAGS}")
-ENDIF ()
-
-###############
-# Executables #
-###############
-MYPACKAGETESTEXECUTABLE(luaunpanicwrapperTester test/luawrapperTester.c)
-MYPACKAGETESTEXECUTABLE(luaunpanicwrapperTester2 test/luawrapperTester2.c)
-
-#########
-# Tests #
-#########
-MYPACKAGECHECK(luaunpanicwrapperTester ${CMAKE_CURRENT_SOURCE_DIR}/test/luawrapperTester.lua)
-MYPACKAGECHECK(luaunpanicwrapperTester2 ${CMAKE_CURRENT_SOURCE_DIR}/test/luawrapperTester2.lua)
-
-##########
-# Export #
-##########
-MYPACKAGECMAKEEXPORT()
-MYPACKAGEPKGCONFIGEXPORT()
-
-#############
-# Packaging #
-#############
-MYPACKAGEPACK ("" "Lua 5.3.4 with unpanic support")
-
-#########
-# Setup #
-#########
-MYPACKAGEPRINTSETUP()
+if(CMAKE_C_COMPILER_ID STREQUAL SunPro)
+  foreach(_target IN LISTS targets)
+    target_compile_options(${_target} PRIVATE -xc99)
+  endforeach()
+endif()
+#
+# EXEs
+#
+include(CTest)
+cmake_helpers_exe(luaunpanicwrapperTester
+  SOURCES test/luawrapperTester.c
+  INSTALL FALSE
+  TEST TRUE
+  TEST_ARGS ${CMAKE_CURRENT_SOURCE_DIR}/test/luawrapperTester.lua
+)
+cmake_helpers_exe(luaunpanicwrapperTester2
+  SOURCES test/luawrapperTester2.c
+  INSTALL FALSE
+  TEST TRUE
+  TEST_ARGS ${CMAKE_CURRENT_SOURCE_DIR}/test/luawrapperTester2.lua
+)
+#
+# Package
+#
+cmake_helpers_package()
