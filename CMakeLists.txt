@@ -39,7 +39,7 @@ FetchContent_MakeAvailable(cmake-helpers)
 #
 # Create library
 #
-cmake_helpers_library(tconv
+cmake_helpers_library(luaunpanic
   CONFIG_ARGS                    include/luaunpanic/internal/luaconf.h.in include/luaunpanic/lua/luaconf.h
   PODS_AUTO                      FALSE
   SOURCES_ACCEPT_RELPATH_REGEXES luaunpanic_amalgamation.c
