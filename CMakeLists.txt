@@ -57,12 +57,10 @@ foreach(_target IN LISTS targets)
 endforeach()
 #
 # We moved lua headers to include/luaunpanic/lua
-# We generate luaconf.h in ${INCLUDE_OUTPUT_PATH}/luaunpanic/lua
 #
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/luaunpanic/lua)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/include/luaunpanic/lua)
 foreach(_target IN LISTS targets)
-  # target_include_directories(${_target} PUBLIC ${CMAKE_CURRENT_BINARY_DIR}/luaunpanic/lua)
+  target_include_directories(${_target} PUBLIC $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/luaunpanic/lua>)
+  target_include_directories(${_target} PUBLIC $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include/luaunpanic/lua>)
 endforeach()
 #
 # Add lua/luaconf.h to interface
