@@ -122,4 +122,6 @@ cmake_helpers_exe(luaunpanicwrapperTester2
 #
 # Package
 #
-cmake_helpers_package()
+cmake_helpers_package(
+  EXTRA_LICENSES Lua ${CMAKE_CURRENT_SOURCE_DIR}/src/LICENSE
+)
