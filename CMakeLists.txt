@@ -50,9 +50,9 @@ cmake_helpers_library(luaunpanic
 #
 foreach(_target IN LISTS targets)
   if(WIN32 AND NOT CYGWIN)
-    target_compile_definitions(${_target} INTERFACE -DLUA_DL_DLL)
+    target_compile_definitions(${_target} PUBLIC -DLUA_DL_DLL)
   else()
-    target_compile_definitions(${_target} INTERFACE -DLUA_USE_DLOPEN -DLUA_USE_POSIX)
+    target_compile_definitions(${_target} PUBLIC -DLUA_USE_DLOPEN -DLUA_USE_POSIX)
   endif()
 endforeach()
 #
@@ -62,8 +62,6 @@ foreach(_target IN LISTS targets)
   target_include_directories(${_target} PUBLIC $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/luaunpanic/lua>)
   target_include_directories(${_target} PUBLIC $<BUILD_LOCAL_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include/luaunpanic/lua>)
 endforeach()
-#
-# Add lua/luaconf.h to interface
 #
 # dl and m dependency
 #
@@ -80,17 +78,16 @@ endif()
 #
 # Those definitions have to propagate to those using the library
 #
-set(LUA_PUBLIC_CFLAGS)
+set(lua_public_cflags)
 if(LUA_32BITS)
-  list(APPEND LUA_PUBLIC_CFLAGS "-DLUA_32BITS")
+  list(APPEND lua_public_cflags "-DLUA_32BITS")
 endif()
 if(LUA_USE_C89)
-  list(APPEND LUA_PUBLIC_CFLAGS "-DLUA_USE_C89")
+  list(APPEND lua_public_cflags "-DLUA_USE_C89")
 endif()
-list(LENGTH LUA_PUBLIC_CFLAGS LUA_PUBLIC_CFLAGS_LENGTH)
-if(LUA_PUBLIC_CFLAGS_LENGTH GREATER 0)
+if(lua_public_cflags)
   foreach(_target IN LISTS targets)
-    target_compile_definitions(${_target} PUBLIC ${LUA_PUBLIC_CFLAGS})
+    target_compile_definitions(${_target} PUBLIC ${lua_public_cflags})
   endforeach()
 endif()
 #
