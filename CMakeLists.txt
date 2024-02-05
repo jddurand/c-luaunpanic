@@ -34,7 +34,11 @@ option(LUA_USE_C89 "Avoid the use of few C99 feature" OFF)
 # Get library helper
 #
 include(FetchContent)
-FetchContent_Declare(cmake-helpers GIT_REPOSITORY https://github.com/jddurand/cmake-helpers.git GIT_SHALLOW TRUE)
+if("x$ENV{CMAKE_HELPERS_DEPEND_CMAKE_HELPERS_FILE}" STREQUAL "x")
+  FetchContent_Declare(cmake-helpers GIT_REPOSITORY https://github.com/jddurand/cmake-helpers.git GIT_SHALLOW TRUE)
+else()
+  FetchContent_Declare(cmake-helpers URL $ENV{CMAKE_HELPERS_DEPEND_CMAKE_HELPERS_FILE})
+endif()
 FetchContent_MakeAvailable(cmake-helpers)
 #
 # Create library
